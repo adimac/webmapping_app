@@ -16,3 +16,6 @@ The bulk of this was created for MSc GIS assignment in spatial data and the web.
 
 - CartoDB
 - Leaflet
+
+
+This is a bit glitchy and lacking some of the aesthetics I was aiming for.  My primary focus was on producing an app that worked in the way intended.
