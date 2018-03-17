@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  
+	  <title>Adi McCrea - Kingston University Centre for GIS</title>
+	  
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+		
+			<style type="text/css">
+				html { height: 100% }
+				body { height: 100%; margin: 0; padding: 0 }
+				#map { height: 600px; width: 800px; }
+			</style>
+		
+			
+			<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />  <!-- Leaflet CSS -->
+			<link rel="stylesheet" href="http://leaflet.github.io/Leaflet.draw/leaflet.draw.css" /> <!-- Leaflet Draw CSS -->
+			<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"> <!-- jQuery UI CSS -->
+			<link rel="stylesheet" type="text/css" href="Adi.css" /> <!-- Adi specific page styling -->
+
+  </head>
+  
+   <body  onbeforeunload="return myFunction()"> <!-- safety reminder before leaving page -->
+   
+		<!-- Twitter feed and user draw interface -->
+		<div id="RHSnav" style="border: 3px solid #111">
+			<a class="twitter-timeline"  href="https://twitter.com/TheAdiMac" data-widget-id="701715898818813952">Tweets by @TheAdiMac</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script><br />
+			
+				<!-- Instructions for user to draw on the map including refs to functions -->
+				<p><h3>Fired up to create your own routes?  Go for it here!</h3></p>
+					<p><b>To reveal the secret tool:</b></p><input type="button" onclick="startEdits()" value="Show me!">
+					<p><b>Click</b> the new button on the map and follow the instructions that appear.</p>
+					<p><b>Watch as you draw</b> - the secret tool will show you your new route length!</p>
+					<p>The tool will also show you <b>how to end</b> your route on the map</p>
+					<p><b>When you're happy</b> with what you've got hit this button:</p><input type="button" onclick="stopEdits()" value="All done!"><br>
+					<p><b>If you want to start again</b> and draw another, go right ahead.  Just click below:</p><input type="button" onClick="resetMap()" value="Start again!">
+					<p><h3>About to launch...show the stuff you just drew</p><input type="button" onClick="refreshLayer()" value="Show new points">
+		</div>
+   
+			<!-- Insert KiLR logo to RHS of page out of the central page wrap -->
+			<img src="KiLR.jpg" alt="Kingston Lunchtime Racer" style="float:left; margin-left:350px; margin-top:80px;">
+		
+		<!-- Page wrap keeps content centred and to the extent of the upper menu bar -->	
+		<div id="page-wrap">
+		
+			<!-- Constructing the menu bar and including links to social media -->
+			<div id="nav">
+				<ul>
+					<li><a href="AdiHome">Home</a></li>
+					<li><a href="ldntubefinal">London Tube Maps</a></li>
+					<li><a href="kraak">Kraak's Taxonomy</a></li>
+					<li><a class="active" href="KiLR">KiLR Web App</a></li> <!-- active class activates a colour to highlight this page in the menu bar-->
+					
+					<ul style="float:right,list-style-type:none;">
+						<li><a title="Twitter" href="https://twitter.com/TheAdiMac"><img src="http://www.qub.ac.uk/home/media/Media,454606,en.png" alt="Twitter_25W_25H" style="width:18px; height:18px;" /></a></li>  <!-- Twitter -->
+						<li><a title="Facebook" href="https://www.facebook.com/kingstonuni"><img src="http://www.qub.ac.uk/home/media/Media,454602,en.png" alt="Facebook_25W_25H" style="width:18px; height:18px;" /></a></li>  <!-- Facebook -->
+						<li><a title="Instagram" href="http://instagram.com/kingstonuniversity"><img src="http://www.qub.ac.uk/home/media/Media,454603,en.png" alt="Instagram_25W_25H" style="width:18px; height:18px;" /></a></li>  <!-- Instagram -->
+						<li><a title="YouTube" href="http://www.youtube.com/user/KingstonEMarketing"><img src="http://www.qub.ac.uk/home/media/Media,454607,en.png" alt="Youtube_25W_25H" style="width:18px; height:18px;" /></a></li> <!-- YouTube -->
+					</ul>
+				</ul>
+			</div>
+		
+		<!--intro to explain the app and how it works, user instructions and options-->
+		<div id="container">
+			<h1>What is KiLR?</h1>
+				<h2>Kingston Lunchtime Racer (KiLR) is your key to a great lunchtime sweat sesh!</h2>
+					<p>Start using your lunchtime (or your freetime) to squeeze in a workout.  Tell us how far you think you want to go and we'll give you our favourite routes starting right here, at Penrhyn Road.  Walk it, bike it, run it, #couchto5k it.  The choice is yours!</p>
+					<p>Love the sesh?  Hate our guts?  Either way, use <b>#KiLR</b> to get the killer workout conversation started!</p>
+			
+			
+				<h2>Get Ready to Kill it!</h2>
+					<p><UL> 
+							
+						<Li>Tell us how far you want to go</Li>
+						<Li>Have a look at your route options</Li>
+						<Li>Select the one that scares you most</Li>
+						<Li>Get going!</Li>
+						
+					</UL></p>
+					
+					<p>Click a route to see the details in a pop-up window.  The selected route will turn dark.  Click anywhere on the map to make this magic stop and go back to the original route display.</p>
+					<p><b>All</b> our routes are foot or bike compatible.  Remember to obey the Highway Code.  And the law!  Enjoy.</p>
+					
+			<!--user preference based on distance options executing an onClick interactivity-->	
+
+				<h2>What's your target distance?</h2>
+			
+					<form>
+							<input type="radio" name="distance" value="Anything up to 5km" onClick="showFive()"><b>Anything up to 5km</b>
+							<input type="radio" name="distance" value="Between 5 and 10km" onClick="showTen()"><b>Between 5 and 10km</b>
+							<input type="radio" name="distance" value="10km +" onClick="showOver()"><b>10km or more &nbsp; &nbsp;</b>
+							<input type="button" name="clear" value="Clear map" onClick="clearMap()">
+					</form>
+					
+				<br></br>
+			</div>
+			
+				
+		<!-- inserting map container to page-->				
+		<div id="map"></div>
+			
+			<!-- the dialog box that should pop up for the user to enter the marker details -->
+			<div id="dialog" title="Point Information">     
+			  <form>
+				<fieldset style="border: none;">
+				  <ul style="list-style-type: none; padding-left: 0px">
+					<li><label for="username">Your Name</label></li>
+					<li><input type="text" name="username" id="username" placeholder="Enter your name" class="text ui-widget-content ui-corner-all"></li>
+					<li><label for="description">About this Route</label></li>
+					<li><input type="text" name="description" id="description" placeholder="Description for this route" class="text ui-widget-content ui-corner-all"></li>
+				  </ul>
+				  <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+				</fieldset>
+			  </form>
+			</div>
+
+		
+			
+			<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script> <!-- Leaflet library -->
+			<script src="http://leaflet.github.io/Leaflet.draw/leaflet.draw.js"></script> <!-- Leaflet Draw JS -->
+			<script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script> <!-- CartoDB lib -->
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> <!-- jQuery v1.11.2 JS -->
+			<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script> <!-- jQueryUI v1.11.4 JS -->
+		
+		<br></br>
+		
+		
+		</div>
+			
+		
+		<script>
+		
+		// function to create safety reminder
+		function myFunction() {
+			return "Enjoy your sesh.  Stay safe and tell someone which KiLR route you're planning.  Be awesome!";
+			}
+			
+    	// Create variable to hold map element, give initial settings to map
+    	var map = L.map('map',{ center: [51.4039404, -0.3036367], zoom: 14});
+		
+		// to reset when clicking different length route
+		//var reset = map.setView(new L.LatLng(51.4039404, -0.3036367), 14);
+
+    	// Add OpenStreetMap tile layer to map element
+			  L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+				}).addTo(map);
+			
+			//This is the regular OSM base layer and it is a little too colourful to have the routes loaded in over the top
+			//L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+		
+		// Add a marker and pop-up for Penrhyn Road Campus
+		var kilrHome = L.marker([51.4039404, -0.3036367]).addTo(map);
+			kilrHome.bindPopup("<h3>Penrhyn Road Campus</h3><p>You'll start and finish<br> every KiLR route here!</p>");
+			
+			
+		// Global variables go here for the pre-loaded content
+		
+		var kilrRoutes = null;
+							
+		
+		// Database queries go here
+		
+		// Get all less than 5k from dataset.  Cast geography to numeric to allow simple display of 2dp for distances
+		var sqlQueryOne = "SELECT *, ROUND((ST_length(the_geom::geography)/1000)::NUMERIC,2) as length FROM kilr_routes WHERE ST_length(the_geom::geography)/1000 <= 5";
+		
+		//Get all between 5 and 10km
+		var sqlQueryTwo = "SELECT *, ROUND((ST_length(the_geom::geography)/1000)::NUMERIC,2) as length FROM kilr_routes WHERE ST_length(the_geom::geography)/1000 BETWEEN 5 AND 10";
+		
+		// Get all over 10km
+		var sqlQueryThree = "SELECT *, ROUND((ST_length(the_geom::geography)/1000)::NUMERIC,2) as length FROM kilr_routes WHERE ST_length(the_geom::geography)/1000 >= 10";
+		
+		// Set CartoDB username
+		var cartoDBUserName = "adimac";
+		
+		// Set individual colours based on length
+		var determineColor = function(length) {
+		if (length > 15) {
+			return 'red';
+			} else if (length > 13) {
+				return 'darkmagenta';
+			} else if (length > 12) {
+				return 'green';
+			} else if (length > 11) {
+				return 'hotpink';
+			} else if (length > 8.9) {
+				return 'red';
+			} else if (length > 4.4) {
+				return 'yellow';
+			} else if (length > 4.2) {
+				return 'red';
+			} else if (length > 2.5) {
+				return 'chartreuse';
+			} else if (length > 2.4) {
+				return 'hotpink';
+			} else {
+				return 'aqua';
+			}
+		};
+		
+		// Apply a highlighter-type function for the click selected route
+		
+		var highlightRoute = function (selected) {
+			if (selected == true) {
+				return 'navy';
+			}
+		};
+		
+		// Get rid of the existing routes and start again
+		function clearMap() {
+			if(map.hasLayer(kilrRoutes)){
+				map.removeLayer(kilrRoutes)};
+				map.setView(new L.LatLng(51.4039404, -0.3036367), 14);
+				};
+				
+		
+		
+		// Function to add all less than 5k
+		function showFive(){
+			//Remove any previously selected routes
+			if(map.hasLayer(kilrRoutes)){
+				map.removeLayer(kilrRoutes);
+				};
+				map.setView(new L.LatLng(51.4039404, -0.3036367), 14);
+			// Get the data from db in geoJSON and using previously defined query
+			$.getJSON("https://"+cartoDBUserName+".cartodb.com/api/v2/sql?format=GeoJSON&q="+sqlQueryOne, function(data) {
+				kilrRoutes = L.geoJson(data,{
+					onEachFeature: function (feature, layer) {
+						layer.bindPopup('<h2><p>' + feature.properties.name + '</h2>' + '<p><b>KiLR Rating</b><br />' + feature.properties.ratings + '</p><em>' + feature.properties.highlights + '</em><br />' + '<p>' + '<b>' + feature.properties.length + "km" + '</b></p>');
+							layer.cartodb_id=feature.properties.cartodb_id;	
+								layer.setStyle({color: determineColor(feature.properties.length), opacity: 0.6});
+								layer.on('click', function (e) {
+									e.target.feature.properties.selected = true;
+								layer.setStyle({color: highlightRoute(e.target.feature.properties.selected), opacity: 1});
+									});
+							map.on('click', function (e) {
+								layer.setStyle({color: determineColor(feature.properties.length), opacity: 0.6});
+								});						
+					}
+				}).addTo(map);
+			});			
+		};	
+		
+		// Function to add 5 - 10km
+		function showTen(){
+			//Remove any previously selected routes
+			if(map.hasLayer(kilrRoutes)){
+				map.removeLayer(kilrRoutes);
+				};
+				map.setView(new L.LatLng(51.3896818, -0.2972095), 14);
+			// Get the data from db in geoJSON and using previously defined query
+			$.getJSON("https://"+cartoDBUserName+".cartodb.com/api/v2/sql?format=GeoJSON&q="+sqlQueryTwo, function(data) {
+				kilrRoutes = L.geoJson(data,{
+					onEachFeature: function (feature, layer) {
+						layer.bindPopup('<h2><p>' + feature.properties.name + '</h2>' + '<p><b>KiLR Rating</b><br />' + feature.properties.ratings + '</p><em>' + feature.properties.highlights + '</em><br />' + '<p>' + '<b>' + feature.properties.length + "km" + '</b></p>');
+							layer.cartodb_id=feature.properties.cartodb_id;
+								layer.setStyle({
+									color: determineColor(feature.properties.length), opacity: 0.6});
+								layer.on('click', function (e) {
+									e.target.feature.properties.selected = true;
+								layer.setStyle({color: highlightRoute(e.target.feature.properties.selected), opacity: 1});
+									});
+							map.on('click', function (e) {
+								layer.setStyle({color: determineColor(feature.properties.length), opacity: 0.6});
+									});			
+					}
+				}).addTo(map);
+			});			
+		};	
+		
+		// Function to add 10km + routes
+		function showOver(){
+			//Remove any previously selected routes
+			if(map.hasLayer(kilrRoutes)){
+				map.removeLayer(kilrRoutes);
+				};
+				map.setView(new L.LatLng(51.419973, -0.302080), 13);
+			// Get the data from db in geoJSON and using previously defined query
+			$.getJSON("https://"+cartoDBUserName+".cartodb.com/api/v2/sql?format=GeoJSON&q="+sqlQueryThree, function(data) {
+				kilrRoutes = L.geoJson(data,{
+					onEachFeature: function (feature, layer) {
+						layer.bindPopup('<h2><p>' + feature.properties.name + '</h2>' + '<p><b>KiLR Rating</b><br />' + feature.properties.ratings + '</p><em>' + feature.properties.highlights + '</em><br />' + '<p>' + '<b>' + feature.properties.length + "km" + '</b></p>');
+						layer.cartodb_id=feature.properties.cartodb_id;
+						layer.setStyle({
+									color: determineColor(feature.properties.length), opacity: 0.6});
+								layer.on('click', function (e) {
+									e.target.feature.properties.selected = true;
+								layer.setStyle({color: highlightRoute(e.target.feature.properties.selected), opacity: 1});
+									});
+							map.on('click', function (e) {
+								layer.setStyle({color: determineColor(feature.properties.length), opacity: 0.6});
+								});						
+					}
+				}).addTo(map);
+			});			
+		};
+		
+		
+		// All the stuff for the user drawing controls here 
+		
+		// variable to hold the points created by the user
+		var cartoDBLines = null;
+		
+		// Write SQL Selection Query to be Used on CartoDB Table
+		// Name of table is 'data_collector'
+		var sqlQuery = "SELECT * FROM data_collector_line";
+
+		// Get CartoDB selection as GeoJSON and Add to Map
+		function getGeoJSON(){
+		  $.getJSON("https://"+cartoDBUsername+".cartodb.com/api/v2/sql?format=GeoJSON&q="+sqlQuery, function(data) {
+			cartoDBLines = L.geoJson(data,{
+			  onEachFeature: function(feature,layer){
+				layer.bindPopup('<p>' + feature.properties.description + '<br /><em>Submitted by </em>' + feature.properties.name + '</p>');
+				layer.cartodb_id=feature.properties.cartodb_id;
+			  }
+			}).addTo(map);
+		  });
+		};
+	
+		
+		// Create Leaflet Draw Control for the draw tools and toolbox
+		var drawControl = new L.Control.Draw({
+		  draw : {
+			polyline : {
+				shapeOptions: {
+					color: 'darkmagenta'
+					},
+				},
+			polygon : false,
+			rectangle : false,
+			circle : false
+		  },
+		  edit : false,
+		  remove: false
+		});
+
+		// Boolean global variable used to control visiblity
+		var controlOnMap = false;
+
+		// Create variable for Leaflet.draw features
+		var drawnItems = new L.FeatureGroup();
+
+
+		// Function to add the draw control to the map to start editing
+		function startEdits(){
+		  if(controlOnMap == true){
+			map.removeControl(drawControl);
+			controlOnMap = false;
+		  }
+		  map.addControl(drawControl);
+		  controlOnMap = true;
+		};
+
+		// Function to remove the draw control from the map
+		function stopEdits(){
+		  map.removeControl(drawControl);
+		  controlOnMap = false;
+		};
+
+		// Function to run when feature is drawn on map
+		map.on('draw:created', function (e) {
+		  var layer = e.layer;
+		  map.addLayer(drawnItems);
+		  drawnItems.addLayer(layer);
+		  dialog.dialog("open"); //the first reference to creating a modal box with jquery UI.  This is popping up OK though the data isn't being sent to the database 
+		});
+		
+		
+		// Use the jQuery UI dialog to create a dialog and set options
+		var dialog = $("#dialog").dialog({
+		  autoOpen: false,
+		  height: 300,
+		  width: 350,
+		  modal: true,
+		  position: {
+			my: "center center",
+			at: "center center",
+			of: "#map"
+		  },
+		  buttons: {
+			"Add to Database": setData,
+			Cancel: function() {
+			  dialog.dialog("close");
+			  map.removeLayer(drawnItems);
+			}
+		  },
+		  close: function() {
+			form[ 0 ].reset();
+			console.log("Dialog closed");
+		  }
+		});
+
+		// Create the form, but prevent it from default functions
+		var form = dialog.find("form").on("submit", function(event) {
+		  event.preventDefault();
+		});
+
+		
+		// http://gis.stackexchange.com/questions/133379/how-to-export-to-all-points-within-leaflet-polygon  could be trying it this way??
+		// Create a function that sets an INSERT statement based on the information entered by the user in the form
+		// Currently using this as written for points from an online tutorial but would alter for just lines if I could get the point stuff to work!  Not doing anything when clicked.
+		function setData() {
+		  var enteredUsername = username.value;
+		  var enteredDescription = description.value;
+		  drawnItems.eachLayer(function (layer) {
+			var sql = "INSERT INTO data_collector_line (the_geom, description, name) VALUES (ST_SetSRID(ST_GeomFromGeoJSON('";
+			var a = layer.getLatLngs();
+			console.log(a);
+			var sql2 ='{"type":"Linestring","coordinates":[' + a.lngs + "," + a.lats + "]}'),4326),'" + enteredDescription + "','" + enteredUsername + "','" + a.lats + "','" + a.lngs +"')";
+			var pURL = sql+sql2;
+			console.log(pURL);
+			submitToProxy(pURL);
+			console.log("Feature has been submitted to the Proxy");
+		  });
+		  map.removeLayer(drawnItems);
+		  drawnItems = new L.FeatureGroup();
+		  console.log("drawnItems has been cleared");
+		  dialog.dialog("close");
+		};
+
+		// Submit data to the PHP using a jQuery Post method
+		var submitToProxy = function(q){
+		  $.post("/~k1532424/callProxy.php", { //Put path to your PHP file here - no idea if this needs the actual web address or the file path that is used in Filezilla (the FTP) service
+			qurl:q,
+			cache: false,
+			timeStamp: new Date().getTime()
+		  }, function(data) {
+			console.log(data);
+			refreshLayer();
+		  });
+		};
+
+		// refresh the layers to show the updated dataset
+		function refreshLayer() {
+		  if (map.hasLayer(cartoDBLines)) {
+			map.removeLayer(cartoDBLines);
+		  };
+		  getGeoJSON();
+		};
+	
+
+	</script>
+		
+	</body>
+</html>
